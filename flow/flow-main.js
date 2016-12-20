@@ -1,0 +1,355 @@
+var canvDiv;
+
+var flow;
+
+var nodes = [];
+
+var curTime = 0;
+var fps = 60;
+var sps = 120;
+//var t0=0;
+
+var dragging = false;
+var mouse = [0, 0];
+
+var wiring; // wire under consruction: [srcNode,srcPort,wire,pt]
+
+var play = true;
+
+var socket;
+var localSocket = {};
+
+var examples = [
+{
+    name: 'lip test',
+    scn: {
+        nodes: [ 
+            {
+                type: 'Custom',
+                x: 200,
+                y: 50,
+                title:'title1',
+                content:'11'
+            }, //0
+            {
+                type: 'Custom',
+                x: 600,
+                y: 200,
+                title:'title2',
+                content:'22'
+            } //1
+              
+        ],
+        wires: [ 
+            {
+                n1: 0,
+                p1: 'key',
+                n2: 1,
+                p2: 'key',
+                color: 100
+            }
+            
+        ]
+    }
+},
+
+{
+    name: 'plot sines',
+    scn: {
+        nodes: [{
+                type: 'Logger',
+                x: 500,
+                y: 200
+            }, //0
+            {
+                type: 'Summer',
+                x: 200,
+                y: 100
+            }, //1
+            {
+                type: 'Mouse',
+                x: 100,
+                y: 180
+            }, //2
+            {
+                type: 'Time',
+                x: 50,
+                y: 410
+            }, //3
+            {
+                type: 'Sine',
+                x: 50,
+                y: 300,
+                i: {
+                    freq: .5
+                }
+            }, //4
+            {
+                type: 'Sine',
+                x: 200,
+                y: 300,
+                i: {
+                    freq: 4.05
+                }
+            }, //5
+            {
+                type: 'Scope',
+                x: 500,
+                y: 350
+            }, //6
+            {
+                type: 'Custom',
+                x: 200,
+                y: 400
+            }, //7
+            {
+                type: 'Multiply',
+                x: 350,
+                y: 150,
+                i: {
+                    b: 2
+                }
+            } //8
+        ],
+        wires: [{
+                n1: 4,
+                p1: 'y',
+                n2: 5,
+                p2: 'amp',
+                color: 100
+            }, {
+                n1: 5,
+                p1: 'y',
+                n2: 6,
+                p2: 'y1',
+                color: 220
+            },
+
+            {
+                n1: 1,
+                p1: 'c',
+                n2: 8,
+                p2: 'a',
+                color: 0
+            }, {
+                n1: 8,
+                p1: 'c',
+                n2: 0,
+                p2: 'msg',
+                color: 100
+            },
+
+            {
+                n1: 3,
+                p1: 't',
+                n2: 7,
+                p2: 'a',
+                color: 320
+            }, {
+                n1: 3,
+                p1: 't',
+                n2: 6,
+                p2: 'x',
+                color: 320
+            },
+
+            {
+                n1: 7,
+                p1: 'x',
+                n2: 6,
+                p2: 'y2',
+                color: 0
+            }, {
+                n1: 7,
+                p1: 'y',
+                n2: 6,
+                p2: 'y3',
+                color: 100
+            }
+        ]
+    }
+}, {
+    name: 'SR latch',
+    scn: {
+        "nodes": [{
+            "type": "button",
+            "title": "",
+            "x": 218,
+            "y": 178,
+            "i": {}
+        }, {
+            "type": "button",
+            "title": "",
+            "x": 216,
+            "y": 260,
+            "i": {}
+        }, {
+            "type": "NOR",
+            "title": "NOR",
+            "x": 384,
+            "y": 179,
+            "i": {
+                "a": false,
+                "b": false
+            }
+        }, {
+            "type": "NOR",
+            "title": "NOR",
+            "x": 384,
+            "y": 259,
+            "i": {
+                "a": true,
+                "b": false
+            }
+        }],
+        "wires": [{
+            "n1": "0",
+            "p1": "o",
+            "n2": "2",
+            "p2": "a",
+            "color": "hsl(200, 50%, 55%)"
+        }, {
+            "n1": "3",
+            "p1": "y",
+            "n2": "2",
+            "p2": "b",
+            "color": "hsl(200, 50%, 55%)"
+        }, {
+            "n1": "1",
+            "p1": "o",
+            "n2": "3",
+            "p2": "b",
+            "color": "hsl(200, 50%, 55%)"
+        }, {
+            "n1": "2",
+            "p1": "y",
+            "n2": "3",
+            "p2": "a",
+            "color": "hsl(200, 50%, 55%)"
+        }]
+    }
+}];
+
+
+function init() {
+    canvDiv = document.getElementById('container');
+
+    if (document.io)
+        socket = io.connect('http://heron.sccs.swarthmore.edu:8201');
+
+    makeTypes();
+
+    //window.setInterval(step,1000/sps);
+    //t0=Date.now()/1000;
+    step();
+
+    //window.setInterval(draw,1000/fps);
+
+    //this is supposed to be better.
+    (function animloop() {
+        requestAnimFrame(animloop);
+        draw();
+    })();
+
+
+    //var tmpScene = localStorage.getItem('tmpScene');
+    //if (tmpScene) {
+    //    loadScene(JSON.parse(tmpScene));
+    //}
+	
+	//genNodes('Rf_IMS570_1.xml');
+	//genNodes('Ga_LTE_Generic_1.xml');
+	//lip add
+	/*
+	//permission even in http
+	var data = mxUtils.open('flow.css');
+    mxUtils.alert('Data: ' + data);
+    */ 
+			
+	/*		    
+    // work on HTTP env
+    {
+        var req = mxUtils.load('1.html');
+        var data = req.getText(); 
+        //mxUtils.popup(data, true);
+        cus1 = new nodeTypes.Custom({x:200,y:400,title:'ECCF_WORKFLOW_LIST',content:data});
+	}
+	{
+        var req = mxUtils.load('2.html');
+        var data = req.getText(); 
+        cus2 = new nodeTypes.Custom({x:500,y:600,title:'ECCF_XDR_DEFINITION',content:data});
+	}
+	
+	mkWire(cus1,'d',cus2,'a',0);
+	//lip add end
+	*/
+
+    //for all control box
+    //makeLibrary();
+}
+
+
+var draw = function draw() {
+    if (play) {
+        //step();
+
+        for (var ii in nodes) {
+            nodes[ii].draw();
+        }
+    }
+}
+
+// main run loop
+var step = function step() {
+    //curTime=Date.now()/1000-t0;
+    if (play) {
+        curTime += 1 / sps;
+
+        for (var ii in nodes) {
+            nodes[ii].eval();
+        }
+        for (var ii in nodes) {
+            nodes[ii].progress();
+        }
+
+    }
+
+    window.setTimeout(step, 1000 / sps);
+}
+
+function unloading() {
+    localStorage.setItem('tmpScene', JSON.stringify(exportNodes(nodes)));
+}
+
+    //misc utility funcs
+
+Math.dist = function(x1, y1, x2, y2) {
+    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
+
+objectSize = function(obj) {
+    var size = 0,
+        key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+// shim layer with setTimeout fallback
+window.requestAnimFrame = (function() {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function( /* function */ callback, /* DOMElement */ element) {
+            window.setTimeout(callback, 1000 / 60);
+    };
+})();
+
+
+  
+

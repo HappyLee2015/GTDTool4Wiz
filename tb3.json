@@ -1,0 +1,17 @@
+{
+    "onSingleLine": true,
+    "lists": [
+        
+        {
+            "title": "Done",
+            "defaultStyle": "lobilist-success",
+            "items": [
+                {
+                    "title": "done1",
+                    "description": "1",
+                    "listId": "lobilist-list-2"
+                }
+            ]
+        } 
+    ]
+}

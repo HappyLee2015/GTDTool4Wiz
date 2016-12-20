@@ -1,0 +1,16 @@
+{
+    "onSingleLine": true,
+    "lists": [
+        {
+            "title": "Todo",
+            "defaultStyle": "lobilist-default",
+            "items": [
+                {
+                    "title": "todo1",
+                    "description": "1",
+                    "listId": "lobilist-list-0"
+                }
+            ]
+        } 
+    ]
+}

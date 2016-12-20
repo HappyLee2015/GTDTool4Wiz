@@ -1,0 +1,30 @@
+
+<html>
+    <head>
+        <link rel="stylesheet" href="flow/flow.css" media="screen" type="text/css" />
+
+        <script type="text/javascript" src="flow/flow-ui.js"></script>
+        <script type="text/javascript" src="flow/flow-types.js"></script>
+        <script type="text/javascript" src="flow/flow-widget.js"></script>
+        <script type="text/javascript" src="flow/flow-wire.js"></script>
+        <script type="text/javascript" src="flow/flow-node.js"></script>
+        <script type="text/javascript" src="flow/flow-main.js"></script>
+        <script type="text/javascript" src="flow/flow-tb.js"></script>
+        
+        <script type="text/javascript" src="lb/lib/jquery/jquery.min.js"></script>
+
+        <!-- lip add for new UI of workflow, TBD -->
+        <script type="text/javascript">mxBasePath = "./mxsrc";</script>
+        <script type="text/javascript" src="mxClient.js"></script>
+        
+        
+    </head>
+
+    <body onload = "init();genNodes('flow/tb.json');" onunload = "unloading()">
+        123
+        <div id = "container"></div> 
+        <div id = "actions-by-ajax"></div>
+        
+        
+    </body>
+</html>

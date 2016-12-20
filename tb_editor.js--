@@ -1,0 +1,38 @@
+(function () {
+	var objApp = WizExplorerApp;
+	var objWindow = objApp.Window;
+	var objDocument = objWindow.CurrentDocument;
+
+	if (objDocument == null) {
+		return;
+	}
+
+	var objCommon = objApp.CreateWizObject("WizKMControls.WizCommonUI");
+	var tempPath = objCommon.GetSpecialFolder("TemporaryFolder");
+	
+	objCommon.CreateDirectory(tempPath += "tb_temp/");
+	objCommon.CreateDirectory(tempPath += objDocument.GUID + "/");
+	objCommon.CreateDirectory(tempPath + "index_files/");
+
+	var tempFile = tempPath + "index.html";
+
+	var pluginPath = objApp.GetPluginPathByScriptFileName("tb_editor.js");
+	objCommon.CopyFile(pluginPath + "tb.html", tempFile);
+
+//alert((pluginPath));
+	var tempText = objCommon.LoadTextFromFile(tempFile);
+	
+	//<script type="text/javascript" src="Editor.jsmind/js/jsmind.js"></script>
+	
+	tempText = tempText.replace(/(<script type="text\/javascript" src=")/g, "$1" + encodeURI(pluginPath))
+					   .replace(/(<link type="text\/css" rel="stylesheet" href=")/g, "$1" + encodeURI(pluginPath))
+					   .replace(/(<img src=")/g, "$1" + encodeURI(pluginPath));
+	objCommon.SaveTextToFile(tempFile, tempText, "utf-8-bom");
+
+	var editorFileName = tempFile + "?guid=" + objDocument.GUID + "&kbguid=" + objDocument.Database.KbGUID;
+	
+	editorFileName="file:///C:/Users/lli004/Documents/My Knowledge/Plugins/TaskBoard/tb.html";
+	objWindow.ViewHtml(editorFileName, true);
+	//alert((tempFile));
+	
+})();

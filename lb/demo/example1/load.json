@@ -1,0 +1,38 @@
+{
+    "onSingleLine": true,
+    "lists": [
+        {
+            "title": "Todo",
+            "defaultStyle": "lobilist-default",
+            "items": [
+                {
+                    "title": "1",
+                    "description": "1",
+                    "listId": "lobilist-list-0"
+                }
+            ]
+        } ,
+        {
+            "title": "Doing",
+            "defaultStyle": "lobilist-info",
+            "items": [
+                {
+                    "title": "1",
+                    "description": "1",
+                    "listId": "lobilist-list-1"
+                }
+            ]
+        } ,
+        {
+            "title": "Done",
+            "defaultStyle": "lobilist-success",
+            "items": [
+                {
+                    "title": "1",
+                    "description": "1",
+                    "listId": "lobilist-list-2"
+                }
+            ]
+        } 
+    ]
+}
